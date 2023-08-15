@@ -8,8 +8,9 @@ This query description format is designed to encourage the reuse of
 IDC queries by representing them in a self-describing, self-documenting,
 modular, and easy-to-author way.  
 
-
 ## idcquery Python module
+
+```pip install https://github.com/mhalle/idcquery/releases/download/0.1.1/idcquery-0.1.1-py3-none-any.whl```
 
 The `idcquery` Python module provides a simple loader and parser for the IDC query description. It provides the following functions:
 
