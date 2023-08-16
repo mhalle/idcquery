@@ -68,6 +68,17 @@ Running a query requires setting up Google authentication using
 a credentials file. The location of the file should be set using the
 GOOGLE_APPLICATION_CREDENTIALS environment variable.
 
+## Storing query results in an sqlite database
+
+Using the idcquery command line mode, it's easy to save the results of a query
+in an sqlite database. Use the `sqlite-utils` package, which can be installed as
+follows: 
+
+```pip install sqlite-utils```
+
+Then, do the following:
+
+```python -m idcquery <file-or-url> | sqlite-utils insert output.db tablename - --nl```
 
 ## IDC Query Description Format
 
@@ -101,8 +112,16 @@ build a query to execute it. All other fields are currently for documentation on
     - name: name of column
     - type: type of column value
     - description: description of column
-* query: query expressed in BigQuery format. Often expressed as a multi-line string started with a ">" in YAML. YAML multi-line strings should be intented at least one space.
-* queryIsCacheable: if True, states that the query always returns the same values for a given set of queryParameters.
+* query: query expressed in BigQuery format. Often expressed as a multi-line string 
+started with a ">" in YAML. YAML multi-line strings should be intented at least one space.
+* queryIsCacheable: if True, states that the query always returns the same values for a given set of queryParameters. Such a query is also known as a "pure" function (the same
+query and arguments always produce the same results).
+* queryReturns: If the query is cacheable, this field contains either a dictionary 
+or a list of dictionaries describing the return value of the query. The dictionaries have
+the following fields:
+    - parameterValues: a dictionary containing the query parameter values for this query
+    - returnValue: the value of the query, encoded as a string or nested structure
+    - returnValueUrl: a URL reference to a representation of the query return value
 * references: Published references related to the query
     - citation: text citation of the reference
     - url: URL to the reference
