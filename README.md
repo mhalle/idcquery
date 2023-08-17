@@ -87,9 +87,10 @@ This draft document described the preliminary schema for the IDC query descripti
 **All fields except the query are optional. If specified, queryParameters are used to 
 build a query to execute it. All other fields are currently for documentation only.**
 
-* title: Title of the query
-* summary: A short one-line summary of the query
-* description: A longer textual description of the query and how it it used.
+### Query metadata fields
+* title: Title of the query (supports Markdown formatting)
+* summary: A short summary of the query (supports Markdown formatting)
+* description: A longer textual description of the query and how it it used. (supports Markdown formatting)
 * identifier: A permalink, DOI, or other unique identifier for the query
 * documentationUrl: A link to additional documentation about the query.
 * discussionUrl: A link to a discussion thread about the query.
@@ -98,11 +99,21 @@ build a query to execute it. All other fields are currently for documentation on
     - sponsor: Sponsor of this work
     - identifier: Unique identifier of this grant
 * keywords: List of keywords describing this query
-* contributor: Person or group that contributed to the development of this query
+* contributors: List of people or groups that contributed to the development of this query
     - name: Name of contributor
     - affiliation: Institutional affiliation of this contributor
     - email: Email address of contributor
     - identifier: Unique identifier associated with this person (e.g., ORCID ID)
+    - funding (see funding above)
+* references: Published references related to the query
+    - citation: text citation of the reference (supports Markdown formatting)
+    - url: URL to the reference
+* seeAlso: Links to items related to the query
+    - description: a textual description of the item (supports Markdown formatting)
+    - url: a link to the item
+
+
+### Query fields
 * queryParameters: A list of named parameters used in the querty
     - name: name of the parameter
     - type or arrayType: BigQuery type or arrayType for parameter
@@ -122,11 +133,5 @@ the following fields:
     - parameterValues: a dictionary containing the query parameter values for this query
     - returnValue: the value of the query, encoded as a string or nested structure
     - returnValueUrl: a URL reference to a representation of the query return value
-* references: Published references related to the query
-    - citation: text citation of the reference
-    - url: URL to the reference
-* seeAlso: Links to items related to the query
-    - description: a textual description of the item
-    - url: a link to the item
 
 
