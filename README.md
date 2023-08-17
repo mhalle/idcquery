@@ -119,7 +119,7 @@ build a query to execute it. All other fields are currently for documentation on
     - type or arrayType: BigQuery type or arrayType for parameter
     - defaultValue: Default value for parameter, in JSON-parsable form
     - description: test description of parameter
-* queryReturns: List of columns returned by query for documentation purposes.
+* queryReturnFields: List of columns returned by query for documentation purposes.
     - name: name of column
     - type: type of column value
     - description: description of column
@@ -127,7 +127,7 @@ build a query to execute it. All other fields are currently for documentation on
 started with a ">" in YAML. YAML multi-line strings should be intented at least one space.
 * queryIsCacheable: if True, states that the query always returns the same values for a given set of queryParameters. Such a query is also known as a "pure" function (the same
 query and arguments always produce the same results).
-* queryReturns: If the query is cacheable, this field contains either a dictionary 
+* cachedQueryReturns: If the query is cacheable, this field contains either a dictionary 
 or a list of dictionaries describing the return value of the query. The dictionaries have
 the following fields:
     - parameterValues: a dictionary containing the query parameter values for this query
