@@ -105,6 +105,7 @@ build a query to execute it. All other fields are currently for documentation on
     - email: Email address of contributor
     - identifier: Unique identifier associated with this person (e.g., ORCID ID)
     - funding (see funding above)
+* exampleResult: A Markdown-formatted table showing an example of the query result for documentation purposes.
 * references: Published references related to the query
     - citation: text citation of the reference (supports Markdown formatting)
     - url: URL to the reference
@@ -112,14 +113,13 @@ build a query to execute it. All other fields are currently for documentation on
     - description: a textual description of the item (supports Markdown formatting)
     - url: a link to the item
 
-
 ### Query fields
 * queryParameters: A list of named parameters used in the querty
     - name: name of the parameter
     - type or arrayType: BigQuery type or arrayType for parameter
     - defaultValue: Default value for parameter, in JSON-parsable form
     - description: test description of parameter
-* queryReturnFields: List of columns returned by query for documentation purposes.
+* queryResultsFields: List of columns returned by query for documentation purposes.
     - name: name of column
     - type: type of column value
     - description: description of column
@@ -127,11 +127,9 @@ build a query to execute it. All other fields are currently for documentation on
 started with a ">" in YAML. YAML multi-line strings should be intented at least one space.
 * queryIsCacheable: if True, states that the query always returns the same values for a given set of queryParameters. Such a query is also known as a "pure" function (the same
 query and arguments always produce the same results).
-* cachedQueryReturns: If the query is cacheable, this field contains either a dictionary 
+* cachedQueryResults: If the query is cacheable, this field contains either a dictionary 
 or a list of dictionaries describing the return value of the query. The dictionaries have
 the following fields:
     - parameterValues: a dictionary containing the query parameter values for this query
-    - returnValue: the value of the query, encoded as a string or nested structure
-    - returnValueUrl: a URL reference to a representation of the query return value
-
-
+    - resultValue: the value of the query, encoded as a string or nested structure
+    - resultValueUrl: a URL reference to a representation of the query return value
