@@ -104,6 +104,7 @@ build a query to execute it. All other fields are currently for documentation on
     - name: Name of contributor
     - affiliation: Institutional affiliation of this contributor
     - email: Email address of contributor
+    - homepageUrl: Homepage of contributor
     - identifier: Unique identifier associated with this person (e.g., ORCID ID)
 * exampleResult: A Markdown-formatted table showing an example of the query result for documentation purposes.
 * references: Published references related to the query
