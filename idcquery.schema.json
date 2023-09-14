@@ -1,0 +1,196 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "IDC Query Description Format",
+    "description": "NIH Imaging Data Commons Query Description",
+    "type": "object",
+    "unevaluatedProperties": false,
+    "properties": {
+        "title": {
+            "description": "Title of query",
+            "type": "string"
+        },
+        "summary": {
+            "description": "Short summary of query in Markdown format",
+            "type": "string"
+        },
+        "description": {
+            "description": "Description of query in Markdown format",
+            "type": "string"
+        },
+        "identifier": {
+            "description": "Unique identifier for this query",
+            "type": "string"
+        },
+        "documentationUrl": {
+            "description": "Absolute or relative URL for more documentation",
+            "type": "string",
+            "format": "uri-reference"
+        },
+        "discussionUrl": {
+            "description": "Absolute or relative URL for discussion or support",
+            "type": "string",
+            "format": "uri-reference"
+        },
+        "funding": {
+            "description": "Information about funding that sponsored this query",
+            "type": "array",
+            "unevaluatedProperties": false,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "description": "Name of grant or other funding source",
+                        "type": "string"
+                    },
+                    "sponsor": {
+                        "description": "Name of sponsoring organization",
+                        "type": "string"
+                    },
+                    "identifier": {
+                        "description": "Unique identifier for this funding source",
+                        "type": "string"
+                    },
+                    "homepageUrl": {
+                        "description": "URL for more information on this funding source",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "keywords": {
+            "description": "Array of keywords related to the query",
+            "type": "array"
+        },
+        "contributors": {
+            "description": "Ordered array of contributors to creating this query",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "unevaluatedProperties": false,
+                "properties": {
+                    "name": {
+                        "description": "Name of the contributor",
+                        "type": "string"
+                    },
+                    "identifier": {
+                        "description": "Unique identifier for the person such as ORCID",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "Email address for the contributor",
+                        "type": "string"
+                    },
+                    "homepageUrl": {
+                        "description": "Web page for the contributor",
+                        "type": "string"
+                    },
+                    "affiliation": {
+                        "description": "Insitutional affiliation for the contributor",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "references": {
+            "description": "Papers or other references relevant to the query",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "unevaluatedProperties": false,
+                "properties": {
+                    "citation": {
+                        "description": "textual citation of reference in Markdown format",
+                        "type": "string"
+                    },
+                    "identifier": {
+                        "description": "unique identifier for reference, such as a DOI",
+                        "format": "string"
+                    },
+                    "url": {
+                        "description": "URL to a copy of the reference",
+                        "format": "string"
+                    }
+                }
+            }
+        },
+        "seeAlso": {
+            "description": "A list of related resources or queries",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "unevaluatedProperties": false,
+                "properties": {
+                    "description": {
+                        "description": "A text description of the resource",
+                        "type": "string"
+                    },
+                    "url": {
+                        "description": "URL of the related resource",
+                        "type": "string",
+                        "format": "uri-reference"
+                    }
+                }
+            }
+        },
+        "query": {
+            "description": "the query",
+            "type": "string"
+        },
+        "queryParameters": {
+            "description": "parameters for the query",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "unevaluatedProperties": false,
+                "properties": {
+                    "name": {
+                        "description": "the name of parameter as specified in the query",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "description of the parameter in Markdown format",
+                        "type": "string"
+                    },
+                    "defaultValue": {
+                        "description": "The default value for this parameter"
+                    },
+                    "type": {
+                        "description": "Scalar type of this BigQuery parameter",
+                        "type": "string"
+                    },
+                    "arrayType": {
+                        "description": "Array type of this BigQuery parameter",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "queryResultColumns": {
+            "description": "information about the returned result columns",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "unevaluatedProperties": false,
+                "properties": {
+                    "name": {
+                        "description": "name of column",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "description of column",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "JSON type of column value",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "queryIsCacheable": {
+            "description": "If true, the combination of this query and any associated query parameters will always produce the same results",
+            "type": "boolean"
+        }
+    },
+    "required": []
+}
