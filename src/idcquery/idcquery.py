@@ -3,6 +3,8 @@ import urllib.request
 import urllib.parse
 import json
 from google.cloud import bigquery
+from jinja2 import Environment, BaseLoader
+from .templates import idcquery_markdown_template, idcquery_text_template
 
 """
     Simple implmentation of a human-authorable IDC bigquery 
@@ -40,83 +42,135 @@ from google.cloud import bigquery
     * run_query(queryinfo, client, parameter_values={}, job_config_args={})
 """
 
+class QueryInfo:
+    def __init__(self, queryinfodict):
+        self.queryinfo = queryinfodict
+
+    def get(self, attrname):
+        return self.queryinfo.get(attrname)
+    
+    def __getitem__(self, attrname):
+        return self.queryinfo[attrname]
+    
+    @classmethod
+    def loads(cls, querytext):
+        return cls(yaml_load(querytext))
+
+    @classmethod
+    def load(cls, fp):
+        """Read a queryinfo description from a file object"""
+        # PyYAML supports files
+        return cls(yaml_load(fp))
+    
+    @classmethod
+    def load_from_url(cls, url):
+        """Read a queryinfo description from a URL and return a
+        parsed version. The URL will first be tried as specified, if
+        that fails, a ".yaml" extension will be added. The extensions
+        ".query.yaml", ".json", and ".query.json" will be tried in order."""
+
+        urls_to_try = [
+            url, 
+            url + '.yaml', 
+            url + '.query.yaml',
+            url + '.json', 
+            url + '.query.json'
+        ]
+        for u in urls_to_try:
+            try:
+                with urllib.request.urlopen(u) as fp:
+                    return cls(yaml_load(fp))
+            except urllib.error.HTTPError:
+                continue
+        return None
+
+    @classmethod
+    def load_from_github(cls, user, repo, branch, querypath):
+        """Read a queryinfo description from github using HTTPS. The
+        query is specified by the GitHub user, repo, branch, and path."""
+        base = 'https://raw.githubusercontent.com'
+
+        u = urllib.parse.quote(user)
+        r = urllib.parse.quote(repo)
+        b = urllib.parse.quote(branch)
+        q = urllib.parse.quote(querypath)
+        github_url = f'{base}/{u}/{r}/{b}/{q}'
+        return cls.load_from_url(github_url)
+    
+
+class IDCQueryInfo(QueryInfo):
+
+    def to_markdown(self, template_string=idcquery_markdown_template):
+        rtemplate = Environment().from_string(template_string)
+        formatted = rtemplate.render(**self.queryinfo).replace('\n\n', '\n')
+        return formatted
+        
+    def to_text(self, template_string=idcquery_text_template):
+        rtemplate = Environment().from_string(template_string)
+        formatted = rtemplate.render(**self.queryinfo)
+        return formatted
+    
+    def run_query(self, client, parameter_values = {}, job_config_args = {}):
+        """Runs a bigquery query given a parsed queryinfo description, 
+        a bigquery client, an optional dictionary of query parameter values, and
+        an optional dictionary of query job configuration args."""
+
+        queryinfo = self.queryinfo
+        query = queryinfo['query']
+        try:
+            params = queryinfo['queryParameters']
+        except KeyError:
+            params = None
+        query_parameters = []
+        if params:
+            for p in params:
+                pv = parameter_values.get(p['name'], p['defaultValue'])
+                qp = None
+                if 'type' in p:
+                    qp = bigquery.ScalarQueryParameter(p['name'], 
+                                                    p['type'], 
+                                                    pv)
+                    query_parameters.append(qp)
+                elif 'arrayType' in p:
+                    pv = parameter_values.get(p['name'], p['defaultValue'])
+                    if not isinstance(pv, list):
+                        pv = json.dumps(pv)
+
+                    qp = bigquery.ArrayQueryParameter(p['name'], 
+                                                    p['arrayType'], 
+                                                    pv)
+                    query_parameters.append(qp)
+        
+        jq = bigquery.QueryJobConfig(query_parameters=query_parameters, 
+                                        **job_config_args)
+                
+        return client.query(query, job_config = jq)
+
+
 def loads(querytext):
     """Parse a string containing a queryinfo description. 
     Currently, the parser just loads the query using a YAML
     parser, but may do more format-specific parsing in the future."""
-    return yaml_load(querytext)
+    return IDCQueryInfo.loads(querytext)
 
 def load(fp):
     """Read a queryinfo description from a file object"""
     # PyYAML supports files
-    return yaml_load(fp)
+    return IDCQueryInfo.load(fp)
 
 def load_from_url(url):
     """Read a queryinfo description from a URL and return a
     parsed version. The URL will first be tried as specified, if
     that fails, a ".yaml" extension will be added. The extensions
     ".query.yaml", ".json", and ".query.json" will be tried in order."""
-
-    urls_to_try = [
-        url, 
-        url + '.yaml', 
-        url + '.query.yaml',
-        url + '.json', 
-        url + '.query.json'
-    ]
-    for u in urls_to_try:
-        try:
-            with urllib.request.urlopen(u) as fp:
-                return yaml_load(fp)
-        except urllib.error.HTTPError:
-            continue
-    return None
+    return IDCQueryInfo.load_from_url(url)
 
 # https://raw.githubusercontent.com/mhalle/idc-queries/main/anisotopic_pixel_not_square.query.yaml
 def load_from_github(user, repo, branch, querypath):
     """Read a queryinfo description from github using HTTPS. The
      query is specified by the GitHub user, repo, branch, and path."""
-    base = 'https://raw.githubusercontent.com'
-
-    u = urllib.parse.quote(user)
-    r = urllib.parse.quote(repo)
-    b = urllib.parse.quote(branch)
-    q = urllib.parse.quote(querypath)
-    github_url = f'{base}/{u}/{r}/{b}/{q}'
-    return load_from_url(github_url)
-
-def run_query(queryinfo, client, parameter_values = {}, job_config_args = {}):
-    """Runs a bigquery query given a parsed queryinfo description, 
-    a bigquery client, an optional dictionary of query parameter values, and
-    an optional dictionary of query job configuration args."""
-
-    query = queryinfo['query']
-    try:
-        params = queryinfo['queryParameters']
-    except KeyError:
-        params = None
-    query_parameters = []
-    if params:
-        for p in params:
-            pv = parameter_values.get(p['name'], p['defaultValue'])
-            qp = None
-            if 'type' in p:
-                qp = bigquery.ScalarQueryParameter(p['name'], 
-                                                p['type'], 
-                                                pv)
-                query_parameters.append(qp)
-            elif 'arrayType' in p:
-                pv = parameter_values.get(p['name'], p['defaultValue'])
-                if not isinstance(pv, list):
-                    pv = json.dumps(pv)
-
-                qp = bigquery.ArrayQueryParameter(p['name'], 
-                                                p['arrayType'], 
-                                                pv)
-                query_parameters.append(qp)
+    return IDCQueryInfo.load_from_github(user, repo, branch, querypath)
     
-    jq = bigquery.QueryJobConfig(query_parameters=query_parameters, 
-                                    **job_config_args)
-            
-    return client.query(query, job_config = jq)
+
+
 
