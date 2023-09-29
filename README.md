@@ -23,40 +23,34 @@ The `idcquery` Python module provides a simple loader and parser for the IDC que
 * `load_from_github(user, repo, branch, querypath)`: read and
     parse a query description available on a public GitHub repository.
 
-Each of these functions currently returns a dictionary of fields from the query
-description. In the future, this module will enforce a schema and provide dedicated
-accessors for the different fields, as well as the ability to write out a 
-compliant query description. 
+Each of these functions returns an IDCQueryInfo object that describes the query. 
 
-The `run_query` function provides a way to use a parsed query description 
+The `run_query` method provides a way to use a parsed query description 
 to make to IDC query:
 
-* `run_query(queryinfo, client, parameter_values={}, job_config_args={})`: 
-The run_query function runs a bigquery query using queryinfo,
+* `query_info.run_query(client, parameter_values={}, job_config_args={})`: 
+The run_query method runs a bigquery query using 
 a bigquery client object created externally, and optional 
 information about query and job parameters. Query parameters should
 be named using the BigQuery SQL  "@param" syntax and specified as 
 "queryParameters" in the query description. 
 
+The `job_config_args` are passed directly to the BigQuery query call. 
+In particular, adding `"dry_run": True` to the dictionary allows 
+the syntax of the query to be validated without actually running a
+(potentially long-running and expensive) query.
 
 
-    The `job_config_args` are passed directly to the BigQuery query call. 
-    In particular, adding `"dry_run": True` to the dictionary allows 
-    the syntax of the query to be validated without actually running a
-    (potentially long-running and expensive) query.
 
 ## Running command line queries
 
 The `idcquery` module can be called directly from the command line to
-run queries:
+run queries using the `runquery` subcommand:
 
-```python -m idcquery <query_filename_or_url> [--parameterName1 value1 ...]```
+```python -m idcquery runquery <query_filename_or_url> [--dry-run] [-c credentialsfile] [-p parameterName1 value1] ...```
 
 The module retrieves the query from a file or URL. If the query contains query
 parameters, the value of those parameters can be set using command line flags.
-The following command can be used to see these parameters and their defaults:
-
-```python -m idcquery <query_filename_or_url> --help```
 
 The results of the query are returned with each for being respresented in JSON, 
 separated by newlines. 
@@ -65,8 +59,8 @@ The flag ``--dry-run`` sends the query but does not execute it, allowing it to b
 checked for syntax.
 
 Running a query requires setting up Google authentication using 
-a credentials file. The location of the file should be set using the
-GOOGLE_APPLICATION_CREDENTIALS environment variable.
+a credentials file. The location of the file should be set using the `-c` 
+option or the GOOGLE_APPLICATION_CREDENTIALS environment variable.
 
 ## Storing query results in an sqlite database
 
@@ -78,7 +72,13 @@ follows:
 
 Then, do the following:
 
-```python -m idcquery <file-or-url> | sqlite-utils insert output.db tablename - --nl```
+```python -m idcquery runquery <file-or-url> | sqlite-utils insert output.db tablename - --nl```
+
+## Printing query documentation
+
+The `idcquery print` subcommand can be used to generate formatted information about the query:
+
+```python -m idcquery print -q <query_filename_or_url> --format [text,markdown]```
 
 ## IDC Query Description Format
 
