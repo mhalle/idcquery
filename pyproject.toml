@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "idcquery"
-version = "0.1.1"
+version = "0.3.0"
 description = "IDC BigQuery Query Description helpers for Python"
 requires-python =  ">=3.7"
 
@@ -17,4 +17,7 @@ classifiers = [
 dependencies = [
     "google-cloud-bigquery",
     "pyyaml",
+    "jinja2",
+    "click",
+    "jsonschema"
 ]
