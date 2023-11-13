@@ -36,27 +36,28 @@ def runquery(querysrc, credentialfile, dry_run, parameter):
 # -------------   validate ----------------- #
 @cli.command()
 @click.argument('querysrc', nargs=-1)
-@click.option('-c', '--credentialfile', envvar='GOOGLE_APPLICATION_CREDENTIALS',
-    required=True)
+@click.option('-c', '--credentialfile', envvar='GOOGLE_APPLICATION_CREDENTIALS', default=None)
 @click.option('-q', '--quiet', is_flag=True, default=False, 
               help="don't print output, only set return value")
 @click.option('-k', '--keep-going', is_flag=True, default=False, 
               help="keep going after first error")
 @click.option('-e', '--errors-only', is_flag=True, default=False, 
               help="print only errors and not successes")
-@click.option('--query-only', is_flag=True, default=False,
-              help="only validate the query syntax")
 @click.option('--format-only', is_flag=True, default=False,
               help="only validate the description format")
 def validate(querysrc, credentialfile, quiet, keep_going, 
-                errors_only, query_only, format_only):
+                errors_only, format_only):
     """validate a list of query descriptions by verifying the format and then
         verifying the query syntax by performing a bigquery dry run"""
 
-    do_format = not query_only
+    do_format = True
     do_query = not format_only
 
     if do_query:
+        if not credentialfile:
+            print("credential file missing", file=sys.stderr)
+            sys.exit(1)
+
         credentials = service_account.Credentials.from_service_account_file(credentialfile)
         client = bigquery.Client(credentials=credentials)
 

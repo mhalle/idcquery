@@ -10,7 +10,7 @@ modular, and easy-to-author way.
 
 ## idcquery Python module
 
-```pip install https://github.com/mhalle/idcquery/releases/download/0.1.1/idcquery-0.1.1-py3-none-any.whl```
+```pip install https://github.com/mhalle/idcquery/releases/download/0.1.1/idcquery-0.3.0-py3-none-any.whl```
 
 The `idcquery` Python module provides a simple loader and parser for the IDC query description. It provides the following functions:
 
@@ -47,7 +47,7 @@ the syntax of the query to be validated without actually running a
 The `idcquery` module can be called directly from the command line to
 run queries using the `runquery` subcommand:
 
-```python -m idcquery runquery <query_filename_or_url> [--dry-run] [-c credentialsfile] [-p parameterName1 value1] ...```
+```python -m idcquery runquery [--dry-run] [-c credentialsfile] [-p parameterName1 value1] ... <query_filename_or_url>```
 
 The module retrieves the query from a file or URL. If the query contains query
 parameters, the value of those parameters can be set using command line flags.
@@ -78,7 +78,22 @@ Then, do the following:
 
 The `idcquery print` subcommand can be used to generate formatted information about the query:
 
-```python -m idcquery print -q <query_filename_or_url> --format [text,markdown]```
+```python -m idcquery print --format [text,markdown] <query_filename_or_url> ```
+
+The print subcommand can take a list of queries and will output them all onto stdout. The 
+flag `--include-src` will add the location of the query at the top of the output.
+
+## Validating query description
+
+The `idcquery print` subcommand can be used to validate the query:
+
+```python -m idcquery validate [-c credentialsfile] [--format-only] [--errors-only] [--quiet][--keep-going] <query_filename_or_url> ...```
+
+Validation has two steps. First, the query description is validated against a schema for correctness. Then, if it passes, the BigQuery syntax is validated by making a "dry run" query. 
+
+The `--format-only` option can be used to only do the format check. `--errors-only` will not print successful results, only failures. `--keep-going` will continue to test the all documents (the default
+is to fail and exit on first error.) `--quiet` will suppress text output; the shell status is 0 if no errors were encountered, 1 otherwise.
+
 
 ## IDC Query Description Format
 
