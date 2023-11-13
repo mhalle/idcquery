@@ -10,7 +10,7 @@ modular, and easy-to-author way.
 
 ## idcquery Python module
 
-```pip install https://github.com/mhalle/idcquery/releases/download/0.1.1/idcquery-0.3.0-py3-none-any.whl```
+```pip install https://github.com/mhalle/idcquery/releases/download/0.3.1/idcquery-0.3.1-py3-none-any.whl```
 
 The `idcquery` Python module provides a simple loader and parser for the IDC query description. It provides the following functions:
 
