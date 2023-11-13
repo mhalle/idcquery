@@ -5,6 +5,11 @@ import json
 from google.cloud import bigquery
 from jinja2 import Environment, BaseLoader
 from .templates import idcquery_markdown_template, idcquery_text_template
+import importlib.resources
+import jsonschema
+
+SCHEMA_PATH = 'schema/idcquery.schema.json'
+SCHEMA_JSON = None
 
 """
     Simple implmentation of a human-authorable IDC bigquery 
@@ -45,6 +50,7 @@ from .templates import idcquery_markdown_template, idcquery_text_template
 class QueryInfo:
     def __init__(self, queryinfodict):
         self.queryinfo = queryinfodict
+        self.schema = None
 
     def get(self, attrname):
         return self.queryinfo.get(attrname)
@@ -99,15 +105,24 @@ class QueryInfo:
     
 
 class IDCQueryInfo(QueryInfo):
-
-    def to_markdown(self, template_string=idcquery_markdown_template):
+    def to_markdown(self, template_string=idcquery_markdown_template, default_title=None):
         rtemplate = Environment().from_string(template_string)
-        formatted = rtemplate.render(**self.queryinfo).replace('\n\n', '\n')
+        if default_title and 'title' not in self.queryinfo:
+            render_args = dict.copy(self.queryinfo)
+            render_args.update({'title': default_title})        
+        else:
+            render_args = self.queryinfo
+        formatted = rtemplate.render(**render_args).replace('\n\n', '\n')
         return formatted
         
-    def to_text(self, template_string=idcquery_text_template):
+    def to_text(self, template_string=idcquery_text_template, default_title=None):
         rtemplate = Environment().from_string(template_string)
-        formatted = rtemplate.render(**self.queryinfo)
+        if default_title and 'title' not in self.queryinfo:
+            render_args = dict.copy(self.queryinfo)
+            render_args.update({'title': default_title})
+        else:
+            render_args = self.queryinfo
+        formatted = rtemplate.render(**render_args)
         return formatted
     
     def run_query(self, client, parameter_values = {}, job_config_args = {}):
@@ -145,7 +160,19 @@ class IDCQueryInfo(QueryInfo):
                                         **job_config_args)
                 
         return client.query(query, job_config = jq)
+    
+    def validate_format(self, schema=None):
+        """Validate the format of the queryinfo format using JSON schema.
+        If no schema is provided, a default schema will be used."""
+        
+        global SCHEMA_JSON
+        if not schema:
+            if not SCHEMA_JSON:
+                SCHEMA_JSON = json.loads(importlib.resources.files('idcquery').joinpath(SCHEMA_PATH).read_text())
+            schema = SCHEMA_JSON
 
+        return jsonschema.validate(instance=self.queryinfo, schema=schema)
+    
 
 def loads(querytext):
     """Parse a string containing a queryinfo description. 
@@ -170,7 +197,3 @@ def load_from_github(user, repo, branch, querypath):
     """Read a queryinfo description from github using HTTPS. The
      query is specified by the GitHub user, repo, branch, and path."""
     return IDCQueryInfo.load_from_github(user, repo, branch, querypath)
-    
-
-
-

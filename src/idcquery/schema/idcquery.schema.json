@@ -191,6 +191,5 @@
             "description": "If true, the combination of this query and any associated query parameters will always produce the same results",
             "type": "boolean"
         }
-    },
-    "required": []
+    }
 }

@@ -1,22 +1,22 @@
 import sys
 import json
 from google.cloud import bigquery
+import google.api_core
 from google.oauth2 import service_account
 from idcquery import load, load_from_url
-import argparse
 import click
-
+import jsonschema
 
 @click.group()
 def cli():
     pass
 
+# -------------   runquery  ----------------- #
+
 @cli.command()
 @click.argument('querysrc')
-@click.option('-c', '--credentialfile', 
-    envvar='GOOGLE_APPLICATION_CREDENTIALS',
+@click.option('-c', '--credentialfile', envvar='GOOGLE_APPLICATION_CREDENTIALS',
     required=True)
-
 @click.option('--dry-run', is_flag=True, default=False)
 @click.option('-p', '--parameter', type=(str, str), multiple=True)
 def runquery(querysrc, credentialfile, dry_run, parameter):    
@@ -33,18 +33,90 @@ def runquery(querysrc, credentialfile, dry_run, parameter):
         print(json.dumps(dict(row), default=str))
 
 
+# -------------   validate ----------------- #
+@cli.command()
+@click.argument('querysrc', nargs=-1)
+@click.option('-c', '--credentialfile', envvar='GOOGLE_APPLICATION_CREDENTIALS',
+    required=True)
+@click.option('-q', '--quiet', is_flag=True, default=False, 
+              help="don't print output, only set return value")
+@click.option('-k', '--keep-going', is_flag=True, default=False, 
+              help="keep going after first error")
+@click.option('-e', '--errors-only', is_flag=True, default=False, 
+              help="print only errors and not successes")
+@click.option('--query-only', is_flag=True, default=False,
+              help="only validate the query syntax")
+@click.option('--format-only', is_flag=True, default=False,
+              help="only validate the description format")
+def validate(querysrc, credentialfile, quiet, keep_going, 
+                errors_only, query_only, format_only):
+    """validate a list of query descriptions by verifying the format and then
+        verifying the query syntax by performing a bigquery dry run"""
+
+    do_format = not query_only
+    do_query = not format_only
+
+    if do_query:
+        credentials = service_account.Credentials.from_service_account_file(credentialfile)
+        client = bigquery.Client(credentials=credentials)
+
+    ret_val = 0
+    for q in querysrc:
+        queryinfo = loadq(q)
+
+        this_format_valid = True
+        if do_format:
+            try:
+                queryinfo.validate_format()
+                if not quiet and not errors_only:
+                    print(f'{q}: format: no formatting errors')
+            except jsonschema.exceptions.ValidationError as e:
+                this_format_valid = False
+                if not quiet:
+                    print(f'{q}: format: {e.message}')
+                ret_val = 1
+                if not keep_going:
+                    sys.exit(1)
+
+        if do_query and this_format_valid:
+            parameter_values = []
+            job_config_args={ 'dry_run': True }
+            try:
+                queryinfo.run_query(client, parameter_values, job_config_args)
+                if not quiet and not errors_only:
+                    print(f'{q}: no query errors')
+            except google.api_core.exceptions.BadRequest as e:
+                for ee in e.errors:
+                    if not quiet:
+                        print(f'{q}: {ee["reason"]}: {ee["message"]}')
+                ret_val = 1
+                if not keep_going:
+                    sys.exit(ret_val)
+
+    sys.exit(ret_val)
+
+# -------------   print  ----------------- #
 @cli.command('print')
-@click.argument('querysrc')
+@click.argument('querysrc', nargs=-1)
 @click.option('--format', type=click.Choice(['text', 'markdown']), default='text')
-def print_(querysrc, format): 
-    queryinfo = loadq(querysrc)
-    if format == 'text':
-        print(queryinfo.to_text())
-    elif format == 'markdown':
-        print(queryinfo.to_markdown())
+@click.option('--include-src', is_flag=True, default=False)
+def print_(querysrc, format, include_src): 
+    """Print documentation for a list of queries in text or markdown format"""
+    for q in querysrc:
+        if include_src:
+            print(q)
+        name = q.split('/')[-1].split('.')[0]
+        queryinfo = loadq(q)
+        if format == 'text':
+            print(queryinfo.to_text(default_title=name))
+        elif format == 'markdown':
+            print(queryinfo.to_markdown(default_title=name))
+        if len(querysrc) > 0:
+            if format == 'markdown':
+                print('-------------') # two lines
+            print('-------------')
     return 0
-   
-        
+
 def loadq(querysrc):
     if querysrc.startswith('http'):
         queryinfo = load_from_url(querysrc)
@@ -53,62 +125,6 @@ def loadq(querysrc):
             queryinfo = load(fp)
     return queryinfo
 
-
-'''
-
-    if len(sys.argv) < 2 or sys.argv[1] in ['--help', '-h']:
-        print(f'usage: idcquery [args] <file or url>', file=sys.stderr)
-        sys.exit(1)
-
-    credfile = getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    if not credfile:
-        print(f'idcquery: GOOGLE_APPLICATION_CREDENTIALS environment variable must be set', 
-              file=sys.stderr)
-        sys.exit(1)
-
-    credentials = service_account.Credentials.from_service_account_file(credfile)
-
-    client = bigquery.Client(credentials=credentials)
-    src = sys.argv[1]
-    if src.startswith('http'):
-        queryinfo = load_from_url(src)
-    else:
-        with open(src) as fp:
-            queryinfo = load(fp)
-
-    for p in parameter:
-    
-
-    try:
-        query_parameter_info = queryinfo['queryParameters']
-    except KeyError:
-        query_parameter_info = []
-    
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('querysrc', help="file or url of query description")
-    argparser.add_argument('--dry_run', 
-                           action='store_true',
-                           help='do not execute query, just check its syntax')
-    for q in query_parameter_info:
-        if 'type' in q:
-            argparser.add_argument('--' + q['name'],
-                                   default = q.get('defaultValue', None),
-                                   help = q.get('description', None))
-        elif 'arrayType' in q:
-            argparser.add_argument('--' + q['name'], 
-                                   default = q.get('defaultValue', None),
-                                   help = q.get('description', None),
-                                   nargs='*')
-            
-    args = argparser.parse_args()
-
-    q = queryinfo.run_query(client, 
-                  parameter_values = vars(args), 
-                  job_config_args={ 'dry_run': args.dry_run })
-    for row in q:
-        print(json.dumps(dict(row), default=str))
-
-'''
 
 if __name__ == '__main__':
         cli()
