@@ -4,6 +4,7 @@
     "description": "NIH Imaging Data Commons Query Description",
     "type": "object",
     "unevaluatedProperties": false,
+    "required": ["query"],
     "properties": {
         "title": {
             "description": "Title of query",
