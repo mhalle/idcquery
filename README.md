@@ -8,9 +8,13 @@ descriptions in either MarkDown or text format.
 
 See [FORMAT.md](FORMAT.md) for details about the query description format.
 
+Sample queries can be found here:
+https://github.com/mhalle/idc-queries
+
 This query description format is designed to encourage the reuse of
 IDC queries by representing them in a self-describing, self-documenting,
 modular, and easy-to-author way.  
+
 
 
 ## idcquery Python module
@@ -45,8 +49,6 @@ In particular, adding `"dry_run": True` to the dictionary allows
 the syntax of the query to be validated without actually running a
 (potentially long-running and expensive) query. A shortcut is to use
 a `True value for the `dry_run` argument to the `run_query` call.
-
-The 
 
 
 ## Running command line queries
