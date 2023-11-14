@@ -1,7 +1,7 @@
-from yaml import safe_load as yaml_load
 import urllib.request
 import urllib.parse
 import json
+from yaml import safe_load as yaml_load
 from google.cloud import bigquery
 from jinja2 import Environment, BaseLoader
 from .templates import idcquery_markdown_template, idcquery_text_template
@@ -206,3 +206,13 @@ def load_from_github(user, repo, branch, querypath):
     """Read a queryinfo description from github using HTTPS. The
      query is specified by the GitHub user, repo, branch, and path."""
     return IDCQueryInfo.load_from_github(user, repo, branch, querypath)
+
+def get_yaml_error_text(exc):
+    """Return formatted text from a YAML parser exception"""
+    if exc and hasattr(exc, 'problem_mark'):
+        if exc.context != None:
+            return f'yaml parse error: {exc.problem_mark}\n{exc.problem} {exc.context}'
+        else:
+            return f'yaml parse error: {exc.problem_mark}\n{exc.problem}'
+    else:
+        return f'yaml parse error'

@@ -3,9 +3,10 @@ import json
 from google.cloud import bigquery
 import google.api_core
 from google.oauth2 import service_account
-from idcquery import load, load_from_url
+from idcquery import load, load_from_url, get_yaml_error_text
 import click
 import jsonschema
+import yaml
 
 @click.group()
 def cli():
@@ -50,7 +51,6 @@ def validate(querysrc, credentialfile, quiet, keep_going,
     """validate a list of query descriptions by verifying the format and then
         verifying the query syntax by performing a bigquery dry run"""
 
-    do_format = True
     do_query = not format_only
 
     if do_query:
@@ -63,34 +63,41 @@ def validate(querysrc, credentialfile, quiet, keep_going,
 
     ret_val = 0
     for q in querysrc:
-        queryinfo = loadq(q)
+        try:
+            queryinfo = loadq(q)
+        except (yaml.scanner.ScannerError, yaml.YAMLError) as e:
+            ret_val = 1
+            this_format_valid = False
+            if not quiet:
+                print(f'{q}: format: {get_yaml_error_text(e)}')
+            if not keep_going:
+                break
+            continue
 
-        this_format_valid = True
-        if do_format:
-            try:
-                queryinfo.validate_format()
-                if not quiet and not errors_only:
-                    print(f'{q}: format: no formatting errors')
-            except jsonschema.exceptions.ValidationError as e:
-                this_format_valid = False
-                if not quiet:
-                    print(f'{q}: format: {e.message}')
-                ret_val = 1
-                if not keep_going:
-                    sys.exit(1)
+        try:
+            queryinfo.validate_format()
+            if not quiet and not errors_only:
+                print(f'{q}: format: no formatting errors')
+        except jsonschema.exceptions.ValidationError as e:
+            ret_val = 1
+            if not quiet:
+                print(f'{q}: format: {e.message}')
+            if not keep_going:
+                break
+            continue
 
-        if do_query and this_format_valid:
+        if do_query:
             try:
                 queryinfo.run_query(client, dry_run=True)
                 if not quiet and not errors_only:
                     print(f'{q}: no query errors')
             except google.api_core.exceptions.BadRequest as e:
+                ret_val = 1
                 for ee in e.errors:
                     if not quiet:
                         print(f'{q}: {ee["reason"]}: {ee["message"]}')
-                ret_val = 1
                 if not keep_going:
-                    sys.exit(ret_val)
+                    break
 
     sys.exit(ret_val)
 
@@ -123,7 +130,6 @@ def loadq(querysrc):
         with open(querysrc) as fp:
             queryinfo = load(fp)
     return queryinfo
-
 
 if __name__ == '__main__':
         cli()
