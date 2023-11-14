@@ -80,10 +80,8 @@ def validate(querysrc, credentialfile, quiet, keep_going,
                     sys.exit(1)
 
         if do_query and this_format_valid:
-            parameter_values = []
-            job_config_args={ 'dry_run': True }
             try:
-                queryinfo.run_query(client, parameter_values, job_config_args)
+                queryinfo.run_query(client, dry_run=True)
                 if not quiet and not errors_only:
                     print(f'{q}: no query errors')
             except google.api_core.exceptions.BadRequest as e:

@@ -125,17 +125,25 @@ class IDCQueryInfo(QueryInfo):
         formatted = rtemplate.render(**render_args)
         return formatted
     
-    def run_query(self, client, parameter_values = {}, job_config_args = {}):
+    def run_query(self, client, parameter_values = {}, job_config_args = {}, dry_run=False):
         """Runs a bigquery query given a parsed queryinfo description, 
         a bigquery client, an optional dictionary of query parameter values, and
-        an optional dictionary of query job configuration args."""
+        an optional dictionary of query job configuration args. If the flag
+        dry_run is True, then a dry run of the query will be made to check its
+        syntax."""
 
         queryinfo = self.queryinfo
         query = queryinfo['query']
+
         try:
             params = queryinfo['queryParameters']
         except KeyError:
             params = None
+
+        if dry_run:
+            job_config_args = job_config_args.copy()
+            job_config_args['dry_run'] = True
+
         query_parameters = []
         if params:
             for p in params:
@@ -160,6 +168,7 @@ class IDCQueryInfo(QueryInfo):
                                         **job_config_args)
                 
         return client.query(query, job_config = jq)
+            
     
     def validate_format(self, schema=None):
         """Validate the format of the queryinfo format using JSON schema.
