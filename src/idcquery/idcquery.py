@@ -57,6 +57,9 @@ class QueryInfo:
     
     def __getitem__(self, attrname):
         return self.queryinfo[attrname]
+
+    def get_query(self):
+        return self.queryinfo['query']
     
     @classmethod
     def loads(cls, querytext):
@@ -147,7 +150,7 @@ class IDCQueryInfo(QueryInfo):
         query_parameters = []
         if params:
             for p in params:
-                pv = parameter_values.get(p['name'], p['defaultValue'])
+                pv = parameter_values.get(p['name'], p.get('defaultValue', None))
                 qp = None
                 if 'type' in p:
                     qp = bigquery.ScalarQueryParameter(p['name'], 
@@ -155,7 +158,7 @@ class IDCQueryInfo(QueryInfo):
                                                     pv)
                     query_parameters.append(qp)
                 elif 'arrayType' in p:
-                    pv = parameter_values.get(p['name'], p['defaultValue'])
+                    pv = parameter_values.get(p['name'], p('defaultValue', None))
                     if not isinstance(pv, list):
                         pv = json.dumps(pv)
 
@@ -163,6 +166,8 @@ class IDCQueryInfo(QueryInfo):
                                                     p['arrayType'], 
                                                     pv)
                     query_parameters.append(qp)
+                else:
+                    raise ValueError("type or arrayType must be specified for each queryParameter")
         
         jq = bigquery.QueryJobConfig(query_parameters=query_parameters, 
                                         **job_config_args)
