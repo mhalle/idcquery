@@ -18,6 +18,7 @@ def cli():
 @cli.command()
 @click.argument('querysrc')
 def tojson(querysrc):
+    """Output query description as json """
     queryinfo = loadq(querysrc)
     print(json.dumps(queryinfo.queryinfo, indent=2))
 
@@ -26,6 +27,7 @@ def tojson(querysrc):
 @cli.command()
 @click.argument('querysrc')
 def getquery(querysrc):
+    """Output a query as plain text. """
     queryinfo = loadq(querysrc)
     print(queryinfo.get_query())
 
@@ -38,7 +40,7 @@ def getquery(querysrc):
 @click.option('--dry-run', is_flag=True, default=False)
 @click.option('-p', '--parameter', type=(str, str), multiple=True)
 def runquery(querysrc, credentialfile, dry_run, parameter):
-    """Run a BigQuery query from a query description."""
+    """Run a BigQuery query from a query description."""    
     queryinfo = loadq(querysrc)
 
     credentials = service_account.Credentials.from_service_account_file(credentialfile)
@@ -56,15 +58,15 @@ def runquery(querysrc, credentialfile, dry_run, parameter):
 @cli.command()
 @click.argument('querysrc', nargs=-1)
 @click.option('-c', '--credentialfile', envvar='GOOGLE_APPLICATION_CREDENTIALS', default=None)
-@click.option('-q', '--quiet', is_flag=True, default=False,
+@click.option('-q', '--quiet', is_flag=True, default=False, 
               help="don't print output, only set return value")
-@click.option('-k', '--keep-going', is_flag=True, default=False,
+@click.option('-k', '--keep-going', is_flag=True, default=False, 
               help="keep going after first error")
-@click.option('-e', '--errors-only', is_flag=True, default=False,
+@click.option('-e', '--errors-only', is_flag=True, default=False, 
               help="print only errors and not successes")
 @click.option('--format-only', is_flag=True, default=False,
               help="only validate the description format")
-def validate(querysrc, credentialfile, quiet, keep_going,
+def validate(querysrc, credentialfile, quiet, keep_going, 
                 errors_only, format_only):
     """validate a list of query descriptions by verifying the format and then
         verifying the query syntax by performing a bigquery dry run"""
@@ -124,7 +126,7 @@ def validate(querysrc, credentialfile, quiet, keep_going,
 @click.argument('querysrc', nargs=-1)
 @click.option('--format', type=click.Choice(['text', 'markdown']), default='text')
 @click.option('--include-src', is_flag=True, default=False)
-def print_(querysrc, format, include_src):
+def print_(querysrc, format, include_src): 
     """Print documentation for a list of queries in text or markdown format"""
     for q in querysrc:
         if include_src:
