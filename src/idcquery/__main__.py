@@ -16,11 +16,12 @@ def cli():
 # -------------  tojson -------------------  #
 
 @cli.command()
-@click.argument('querysrc')
+@click.argument('querysrc', nargs=-1)
 def tojson(querysrc):
     """Output query description as json """
-    queryinfo = loadq(querysrc)
-    print(json.dumps(queryinfo.queryinfo, indent=2))
+    for q in querysrc:
+        queryinfo = loadq(q)
+        print(json.dumps(queryinfo.queryinfo))
 
 # -------------  getquery -------------------  #
 

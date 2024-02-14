@@ -94,14 +94,18 @@ class QueryInfo:
         return None
 
     @classmethod
-    def load_from_github(cls, user, repo, branch, querypath):
-        """Read a queryinfo description from github using HTTPS. The
-        query is specified by the GitHub user, repo, branch, and path."""
+    def load_from_github(cls, user, repo, querypath, branch=None):
+        """
+        Read a queryinfo description from github using HTTPS. The
+        query is specified by the GitHub user, repo, path and optionally
+        branch. If branch is not specified, the latest commit of the
+        default branch is used.
+        """
         base = 'https://raw.githubusercontent.com'
 
         u = urllib.parse.quote(user)
         r = urllib.parse.quote(repo)
-        b = urllib.parse.quote(branch)
+        b = urllib.parse.quote(branch if branch else 'HEAD') 
         q = urllib.parse.quote(querypath)
         github_url = f'{base}/{u}/{r}/{b}/{q}'
         return cls.load_from_url(github_url)
