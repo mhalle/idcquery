@@ -9,7 +9,7 @@ descriptions in either MarkDown or text format.
 See [FORMAT.md](FORMAT.md) for details about the query description format.
 
 Sample queries can be found here:
-https://github.com/mhalle/idc-queries
+https://github.com/mhalle/idc-query-cookbook
 
 This query description format is designed to encourage the reuse of
 IDC queries by representing them in a self-describing, self-documenting,
@@ -19,7 +19,7 @@ modular, and easy-to-author way.
 
 ## idcquery Python module
 
-```pip install https://github.com/mhalle/idcquery/releases/download/0.3.4/idcquery-0.3.4-py3-none-any.whl```
+```pip install https://github.com/mhalle/idcquery/releases/download/0.4.0/idcquery-0.4.0-py3-none-any.whl```
 
 The `idcquery` Python module provides a simple loader and parser for the IDC query description. It provides the following functions:
 
@@ -87,7 +87,7 @@ Then, do the following:
 
 The `idcquery print` subcommand can be used to generate formatted information about the query:
 
-```python -m idcquery print --format [text,markdown] <query_filename_or_url> ```
+```python -m idcquery print --format [text,markdown] [--include-src] <query_filename_or_url> ...```
 
 The print subcommand can take a list of queries and will output them all onto stdout. The 
 flag `--include-src` will add the location of the query at the top of the output.
@@ -102,3 +102,18 @@ Validation has two steps. First, the query description is validated against a sc
 
 The `--format-only` option can be used to only do the format check. `--errors-only` will not print successful results, only failures. `--keep-going` will continue to test the all documents (the default
 is to fail and exit on first error.) `--quiet` will suppress text output; the shell status is 0 if no errors were encountered, 1 otherwise.
+
+## Getting query information as JSON
+
+Use the `idcquery tojson` to get all query information in JSON. This
+subcommand can be used with the command line utility `jq` to get specific
+fields from the query description. If more than one query is listed, 
+the results for each query will be output one per line. 
+
+```python -m idcquery tojson <query_filename_or_url> ...```
+
+## Getting the query 
+
+Use the `idcquery getquery` to get just the query from a query description. 
+
+```python -m idcquery getquery <query_filename_or_url> ```
