@@ -10,6 +10,8 @@ import jsonschema
 
 SCHEMA_PATH = 'schema/idcquery.schema.json'
 SCHEMA_JSON = None
+TEMPLATE_ROOT = 'templates'
+MODULE_NAME = 'idcquery'
 
 """
     Simple implmentation of a human-authorable IDC bigquery 
@@ -94,7 +96,7 @@ class QueryInfo:
         return None
 
     @classmethod
-    def load_from_github(cls, user, repo, querypath, branch=None):
+    def load_from_github(cls, user, repo, querypath, branch='HEAD'):
         """
         Read a queryinfo description from github using HTTPS. The
         query is specified by the GitHub user, repo, path and optionally
@@ -105,14 +107,19 @@ class QueryInfo:
 
         u = urllib.parse.quote(user)
         r = urllib.parse.quote(repo)
-        b = urllib.parse.quote(branch if branch else 'HEAD') 
+        b = urllib.parse.quote(branch) 
         q = urllib.parse.quote(querypath)
         github_url = f'{base}/{u}/{r}/{b}/{q}'
         return cls.load_from_url(github_url)
     
 
 class IDCQueryInfo(QueryInfo):
-    def to_markdown(self, template_string=idcquery_markdown_template, default_title=None):
+    def to_markdown(self, template_string=None, default_title=None):
+        if not template_string:
+            if not hasattr(self, 'idcquery_markdown_template'):
+                self.idcquery_markdown_template = read_template('idcquery_markdown_template.jinja2')
+            template_string = self.idcquery_markdown_template
+
         rtemplate = Environment().from_string(template_string)
         if default_title and 'title' not in self.queryinfo:
             render_args = dict.copy(self.queryinfo)
@@ -122,7 +129,12 @@ class IDCQueryInfo(QueryInfo):
         formatted = rtemplate.render(**render_args).replace('\n\n', '\n')
         return formatted
         
-    def to_text(self, template_string=idcquery_text_template, default_title=None):
+    def to_text(self, template_string=None, default_title=None):
+        if not template_string:
+            if not hasattr(self, 'idcquery_text_template'):
+                self.idcquery_text_template = read_template('idcquery_text_template.jinja2')
+            template_string = self.idcquery_text_template
+
         rtemplate = Environment().from_string(template_string)
         if default_title and 'title' not in self.queryinfo:
             render_args = dict.copy(self.queryinfo)
@@ -186,7 +198,7 @@ class IDCQueryInfo(QueryInfo):
         global SCHEMA_JSON
         if not schema:
             if not SCHEMA_JSON:
-                SCHEMA_JSON = json.loads(importlib.resources.files('idcquery').joinpath(SCHEMA_PATH).read_text())
+                SCHEMA_JSON = read_schema()
             schema = SCHEMA_JSON
 
         return jsonschema.validate(instance=self.queryinfo, schema=schema)
@@ -225,3 +237,14 @@ def get_yaml_error_text(exc):
             return f'yaml parse error: {exc.problem_mark}\n{exc.problem}'
     else:
         return f'yaml parse error'
+
+def read_template(template_name):
+    return (importlib.resources.files(MODULE_NAME)
+                    .joinpath(TEMPLATE_ROOT, template_name)
+                    .read_text())
+
+def read_schema():
+    return json.loads(
+        importlib.resources.files(MODULE_NAME)
+            .joinpath(SCHEMA_PATH)
+            .read_text())
