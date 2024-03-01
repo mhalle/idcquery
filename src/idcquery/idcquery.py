@@ -4,7 +4,6 @@ import json
 from yaml import safe_load as yaml_load
 from google.cloud import bigquery
 from jinja2 import Environment, BaseLoader
-from .templates import idcquery_markdown_template, idcquery_text_template
 import importlib.resources
 import jsonschema
 
