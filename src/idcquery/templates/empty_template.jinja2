@@ -1,0 +1,76 @@
+{% if title %}
+title: {{ title }}
+{% else %}
+#title: 
+{% endif %}
+{% if summary %}
+summary: |
+{{ summary |  indent(2, first=True) }}
+{% elif all %}
+#summary: |
+{% endif %}
+{% if description %}
+description: |
+{{ description |  indent(2, first=True) }}
+{% elif all %}
+#description: |
+{% endif %}
+{% if identifier %}
+identifier: {{ identifier }}
+{% elif all %}
+#identifier: 
+{% endif %}
+{% if keywords %}
+keywords: {{ keywords }}
+{% elif all %}
+#keywords:
+{% endif %}
+{% if all %}
+#documentationUrl: 
+#discussionUrl: 
+
+#funding:
+#    - name:
+#      sponsor:
+#      identifier:
+#      homepageUrl:
+    
+#contributors:
+#    - name:
+#      affiliation:
+#      identifier:
+#      homepageUrl:
+#      email:
+#    - name: ... 
+
+#references:
+#    - citation:
+#    - identifier:
+#    - url:
+
+#seeAlso:
+#    - description:
+#      url
+{% endif %}
+{% if all %}
+#queryParameters:
+#    - name:
+#      description: 
+#      type or arrayType: 
+#      defaultValue: 
+#    - name: ...
+
+#queryResultColumns:
+#    - name:
+#      type:
+#      description:
+#    - name:  ...
+
+#queryIsCacheable:
+{% endif %}
+{% if query %}
+query: |
+    {{ query | indent(2, first=True) }}
+{% elif all %}
+#query: |
+{% endif %}

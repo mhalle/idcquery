@@ -3,7 +3,7 @@ import urllib.parse
 import json
 from yaml import safe_load as yaml_load
 from google.cloud import bigquery
-from jinja2 import Environment, BaseLoader
+from jinja2 import Environment, BaseLoader, Undefined
 import importlib.resources
 import jsonschema
 
@@ -241,6 +241,9 @@ def read_template(template_name):
     return (importlib.resources.files(MODULE_NAME)
                     .joinpath(TEMPLATE_ROOT, template_name)
                     .read_text())
+
+def interpret_template(template_name, args):
+    return Environment(undefined=Undefined).from_string(read_template(template_name)).render(**args)
 
 def read_schema():
     return json.loads(

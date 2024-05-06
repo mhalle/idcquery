@@ -3,10 +3,11 @@ import json
 from google.cloud import bigquery
 import google.api_core
 from google.oauth2 import service_account
-from idcquery import load, load_from_url, get_yaml_error_text
+from idcquery import load, load_from_url, get_yaml_error_text, interpret_template
 import click
 import jsonschema
 import yaml
+
 
 @click.group()
 def cli():
@@ -32,6 +33,35 @@ def getquery(querysrc):
     queryinfo = loadq(querysrc)
     print(queryinfo.get_query())
 
+# -------------- create ---------------------- #
+    
+@cli.command()
+@click.option('--title')
+@click.option('--summary')
+@click.option('--description')
+@click.option('--queryfile')
+@click.option('--identifier')
+@click.option('--all', is_flag=True, default=False)
+def create(title, summary, description, queryfile, identifier, all):
+    data = {}
+    data['all'] = all
+    if not title is None:
+        data['title'] = title
+    if not summary is None:
+        data['summary'] = summary
+    if not description is None:
+        data['description'] = description
+    if not identifier is None:
+        data['identifier'] = identifier
+    if queryfile:
+        data['query'] = open(queryfile).read()
+    else:
+        data['query'] = ''
+
+    print(interpret_template('empty_template.jinja2', data).replace('\n\n', '\n'))
+
+    
+    
 # -------------   runquery  ----------------- #
 
 @cli.command()
