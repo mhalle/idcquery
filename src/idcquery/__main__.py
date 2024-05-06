@@ -41,8 +41,11 @@ def getquery(querysrc):
 @click.option('--description')
 @click.option('--queryfile')
 @click.option('--identifier')
-@click.option('--all', is_flag=True, default=False)
+@click.option('--all', is_flag=True, default=False, 
+              help="include all fields, with unused ones commented out")
 def create(title, summary, description, queryfile, identifier, all):
+    """Create an empty query. Fields may be specified on command line. """
+
     data = {}
     data['all'] = all
     if not title is None:
