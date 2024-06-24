@@ -3,21 +3,25 @@
 {% endif -%}
 
 {%- if summary %}
+
 ## Summary
 {{ summary }}
 {% endif -%}
 
 {%- if description %}
+
 ## Description
 {{ description }}
 {% endif -%}
 
 {%- if keywords %}
+
 ## Keywords
 {% for keyword in keywords %}{{ keyword }}{{ ", " if not loop.last else "" }}{% endfor %}
 {% endif -%}
 
 {%- if contributors %}
+
 ## Contributors
 {% for contributor in contributors %}
 - **{{ contributor.name }}**  
@@ -30,6 +34,7 @@
 {% endif -%}
 
 {%- if funding %}
+
 ## Funding
 {% for source in funding %}
 - **{{ source.name }}**  
@@ -41,6 +46,7 @@
 {% endif -%}
 
 {%- if identifier %}
+
 ## Identifier
 {{ identifier }}
 {% endif -%}

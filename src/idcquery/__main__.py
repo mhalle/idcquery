@@ -165,15 +165,16 @@ def validate(querysrc, credentialfile, quiet, keep_going,
 def print_(querysrc, format, include_src, strip_src_path): 
     """Format documentation for a list of queries in text or markdown format"""
     for q in querysrc:
+        name = q.split('/')[-1].split('.')[0]
         if include_src:
             pq = q
-            name = pq.split('/')[-1].split('.')[0]
             if strip_src_path:
                 try:
                     pq = pq.split('/')[-1]
                 except IndexError:
                     pass
-                print(f'{name} ({pq})')
+                print(f'{pq}')
+                print()
         queryinfo = loadq(q)
         if format == 'text':
             print(queryinfo.to_text(default_title=name))
@@ -182,7 +183,7 @@ def print_(querysrc, format, include_src, strip_src_path):
         if len(querysrc) > 0:
             if format == 'markdown':
                 print('-------------') # two lines
-            print('-------------')
+                print()
     return 0
 
 def loadq(querysrc):
