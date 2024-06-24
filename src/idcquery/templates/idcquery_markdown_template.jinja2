@@ -17,7 +17,7 @@
 {% for keyword in keywords %}{{ keyword }}{{ ", " if not loop.last else "" }}{% endfor %}
 {% endif -%}
 
-{%- if contributors -%}
+{%- if contributors %}
 ## Contributors
 {% for contributor in contributors %}
 - **{{ contributor.name }}**  
@@ -29,21 +29,24 @@
 {% endfor %}
 {% endif -%}
 
-{%- if funding -%}
+{%- if funding %}
 ## Funding
 {% for source in funding %}
 - **{{ source.name }}**  
 {% if source.sponsor -%}{{ source.sponsor }}{{ '  \n' }}{%- endif -%}
 {% if source.identifier -%}{{ source.identifier }}{{ '  \n' }}{%- endif -%}
 {% if source.homepageUrl -%}{{ source.homepageUrl }}{{ '  \n' }}{%- endif -%}
+
 {% endfor %}
 {% endif -%}
 
-{%- if identifier -%}
+{%- if identifier %}
 ## Identifier
 {{ identifier }}
 {% endif -%}
-{% if query %}
+
+{%- if query %}
+
 ## Query
 ```sql
 {{ query }}
