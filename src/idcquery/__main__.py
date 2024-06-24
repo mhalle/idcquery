@@ -155,16 +155,23 @@ def validate(querysrc, credentialfile, quiet, keep_going,
 
     sys.exit(ret_val)
 
-# -------------   print  ----------------- #
-@cli.command('print')
+# -------------   format  ----------------- #
+@cli.command('format')
 @click.argument('querysrc', nargs=-1)
 @click.option('--format', type=click.Choice(['text', 'markdown']), default='text')
 @click.option('--include-src', is_flag=True, default=False)
-def print_(querysrc, format, include_src): 
-    """Print documentation for a list of queries in text or markdown format"""
+@click.option('--strip-src-path', is_flag=True, default=True)
+
+def print_(querysrc, format, include_src, strip_src_path): 
+    """Format documentation for a list of queries in text or markdown format"""
     for q in querysrc:
         if include_src:
-            print(q)
+            if strip_src_path:
+                try:
+                    q = q.split('/')[-1]
+                except IndexError:
+                    pass
+                print(q)
         name = q.split('/')[-1].split('.')[0]
         queryinfo = loadq(q)
         if format == 'text':
