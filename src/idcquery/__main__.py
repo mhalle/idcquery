@@ -166,13 +166,14 @@ def print_(querysrc, format, include_src, strip_src_path):
     """Format documentation for a list of queries in text or markdown format"""
     for q in querysrc:
         if include_src:
+            pq = q
+            name = pq.split('/')[-1].split('.')[0]
             if strip_src_path:
                 try:
-                    q = q.split('/')[-1]
+                    pq = pq.split('/')[-1]
                 except IndexError:
                     pass
-                print(q)
-        name = q.split('/')[-1].split('.')[0]
+                print(f'{name} ({pq})')
         queryinfo = loadq(q)
         if format == 'text':
             print(queryinfo.to_text(default_title=name))
