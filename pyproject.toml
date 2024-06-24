@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "idcquery"
-version = "0.5.0"
+version = "0.6.1"
 description = "IDC BigQuery Query Description helpers for Python"
 requires-python =  ">=3.7"
 
@@ -21,3 +21,8 @@ dependencies = [
     "click",
     "jsonschema"
 ]
+
+[tool.setuptools.package-data]
+"idcquery.templates" = ["*.jinja2"]
+"idcquery.schema" = ["*.json"]
+
