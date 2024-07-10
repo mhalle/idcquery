@@ -6,6 +6,8 @@ from google.cloud import bigquery
 from jinja2 import Environment, BaseLoader, Undefined
 import importlib.resources
 import jsonschema
+import re
+
 
 SCHEMA_PATH = 'schema/idcquery.schema.json'
 SCHEMA_JSON = None
@@ -113,33 +115,37 @@ class QueryInfo:
     
 
 class IDCQueryInfo(QueryInfo):
-    def to_markdown(self, template_string=None, default_title=None):
+    def to_markdown(self, template_string=None, default_title=None, src=None):
         if not template_string:
             if not hasattr(self, 'idcquery_markdown_template'):
                 self.idcquery_markdown_template = read_template('idcquery_markdown_template.jinja2')
             template_string = self.idcquery_markdown_template
 
         rtemplate = Environment().from_string(template_string)
+        render_args = dict.copy(self.queryinfo)
         if default_title and 'title' not in self.queryinfo:
-            render_args = dict.copy(self.queryinfo)
-            render_args.update({'title': default_title})        
-        else:
-            render_args = self.queryinfo
+            render_args.update({'title': default_title})
+
+        if src:
+            render_args.update({'src': src })
+
         formatted = rtemplate.render(**render_args).replace('\n\n', '\n')
         return formatted
         
-    def to_text(self, template_string=None, default_title=None):
+    def to_text(self, template_string=None, default_title=None, src=None):
         if not template_string:
             if not hasattr(self, 'idcquery_text_template'):
                 self.idcquery_text_template = read_template('idcquery_text_template.jinja2')
             template_string = self.idcquery_text_template
 
         rtemplate = Environment().from_string(template_string)
+        render_args = dict.copy(self.queryinfo)
+
         if default_title and 'title' not in self.queryinfo:
-            render_args = dict.copy(self.queryinfo)
             render_args.update({'title': default_title})
-        else:
-            render_args = self.queryinfo
+        if src:
+            render_args.update({'src': src})
+
         formatted = rtemplate.render(**render_args)
         return formatted
     
@@ -202,7 +208,6 @@ class IDCQueryInfo(QueryInfo):
 
         return jsonschema.validate(instance=self.queryinfo, schema=schema)
     
-
 def loads(querytext):
     """Parse a string containing a queryinfo description. 
     Currently, the parser just loads the query using a YAML

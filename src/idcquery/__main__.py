@@ -7,7 +7,8 @@ from idcquery import load, load_from_url, get_yaml_error_text, interpret_templat
 import click
 import jsonschema
 import yaml
-
+from .markdown_utils import  concatenate_markdown_with_toc, concatenate_markdown_multi, get_path_component
+import os.path
 
 @click.group()
 def cli():
@@ -160,10 +161,38 @@ def validate(querysrc, credentialfile, quiet, keep_going,
 @click.argument('querysrc', nargs=-1)
 @click.option('--format', type=click.Choice(['text', 'markdown']), default='text')
 @click.option('--include-src', is_flag=True, default=False)
-@click.option('--strip-src-path', is_flag=True, default=True)
-
-def print_(querysrc, format, include_src, strip_src_path): 
+@click.option('--strip-src-path', is_flag=True, default=False)
+@click.option('--include-toc', is_flag=True, default=False)
+@click.option('--document-title', default=None)
+@click.option('--introduction-file', default=None)
+def format(querysrc, format, include_src=False, strip_src_path=False, introduction_file=None, include_toc=True, document_title=None): 
     """Format documentation for a list of queries in text or markdown format"""
+    if format == 'markdown':
+        if len(querysrc) == 1:
+            include_toc = False
+
+        markdown_docs = []
+        for q in querysrc:
+            name = q.split('/')[-1].split('.')[0]
+            src = None
+            if include_src:
+                src = q
+                if strip_src_path:
+                    try:
+                        src = src.split('/')[-1]
+                    except IndexError:
+                        pass
+            queryinfo = loadq(q)        
+            markdown_docs.append(queryinfo.to_markdown(default_title=name, src=src))
+
+        introduction = None
+        if introduction_file:
+            with open(introduction_file) as fp:
+                introduction = fp.read()
+        
+        print(concatenate_markdown_with_toc(markdown_docs, document_title, introduction, include_toc))
+        return 0
+
     for q in querysrc:
         name = q.split('/')[-1].split('.')[0]
         if include_src:
@@ -181,10 +210,67 @@ def print_(querysrc, format, include_src, strip_src_path):
         elif format == 'markdown':
             print(queryinfo.to_markdown(default_title=name))
         if len(querysrc) > 0:
-            if format == 'markdown':
-                print('-------------') # two lines
-                print()
+            print()
     return 0
+
+# -------------   format  ----------------- #
+@cli.command('format-multi')
+@click.argument('files', nargs=-1)
+@click.option('--include-src', is_flag=True, default=False)
+@click.option('--strip-src-path', type=int, default=1)
+@click.option('--introduction', default=None)
+
+def format_multi(files,
+                 include_src=False, 
+                 strip_src_path=0, 
+                 introduction=None): 
+    """Format enhanced documentation for a list of queries in markdown format"""
+
+    intro_info = None
+    if introduction: 
+        if introduction.endswith('.md'):
+            with open(introduction, 'r') as fp:
+                intro_info = {
+                    'filename': introduction,
+                    'content': fp.read(),
+                    'type': 'intro'
+                }
+        else:
+            intro_info = {
+                'filename': None,
+                'content': f'# {introduction}',
+                'type': 'intro'
+            }
+
+    fileinfo = []
+    for file in files:
+        if file.endswith('.yaml'):
+            if strip_src_path != 0:
+                src_text = get_path_component(file, strip_src_path)
+            else:
+                src_text = None
+            name = file.split('/')[-1].split('.')[0]
+            queryinfo = loadq(file)
+            fileinfo.append({
+                'content': queryinfo.to_markdown(default_title=name, src=src_text),
+                'filename': file,
+                'type': 'query'
+            })
+
+        elif file.endswith('.md'):
+            with open(file, 'r') as fp:
+                fileinfo.append({'content': fp.read(), 'filename': file, 'type': 'group'})
+
+        else: # just a string
+            fileinfo.append({'filename': None, 'content': f'# {file}', 'type': 'group'})
+    md = concatenate_markdown_multi(fileinfo, 
+                                   introduction=intro_info, 
+                                   strip_src_path=strip_src_path, include_toc=True)
+        
+    print(md)
+    return 0
+
+
 
 def loadq(querysrc):
     if querysrc.startswith('http'):
@@ -196,3 +282,4 @@ def loadq(querysrc):
 
 if __name__ == '__main__':
         cli()
+

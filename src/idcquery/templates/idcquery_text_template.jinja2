@@ -1,63 +1,68 @@
-{%- if title -%}
+{%- if title is defined -%}
 {{ title }}
 {% endif -%}
 
-{%- if summary %}
+{%- if src is defined %}
+{{ src }}
+{% endif -%}
+
+{%- if summary is defined %}
 Summary: {{ summary }}
 {% endif -%}
 
-{%- if description %}
+{%- if description is defined %}
 Description: {{ description }}
 {% endif -%}
 
-{%- if keywords %}
+{%- if keywords is defined %}
 Keywords: {% for keyword in keywords %}{{ keyword }}{{ ", " if not loop.last else "" }}{% endfor %}
 {% endif -%}
 
-{%- if contributors %}
+{%- if contributors is defined %}
 Contributors:
 {%- for contributor in contributors %}
 {{ contributor.name }}  
-{% if contributor.affiliation -%}{{ contributor.affiliation }}{{ '  \n' }}{%- endif -%}
-{% if contributor.email -%}{{ contributor.email }}{{ '  \n' }}{%- endif -%}
-{% if contributor.homepageUrl -%}{{ contributor.homepageUrl }}{{ '  \n' }}{%- endif -%}
-{% if contributor.identifier -%}{{ contributor.identifier }}{{ '  \n' }}{%- endif -%}
+{% if contributor.affiliation is defined -%}{{ contributor.affiliation }}{{ '  \n' }}{%- endif -%}
+{% if contributor.email is defined -%}{{ contributor.email }}{{ '  \n' }}{%- endif -%}
+{% if contributor.homepageUrl is defined -%}{{ contributor.homepageUrl }}{{ '  \n' }}{%- endif -%}
+{% if contributor.identifier is defined -%}{{ contributor.identifier }}{{ '  \n' }}{%- endif -%}
 
 {% endfor -%}
 {% endif -%}
 
-{%- if funding %}
+{%- if funding is defined %}
 Funding:
 {%- for source in funding %}
 {{ source.name }}
-{% if source.sponsor -%}{{ source.sponsor }}{{ '  \n' }}{%- endif -%}
-{% if source.identifier -%}{{ source.identifier }}{{ '  \n' }}{%- endif -%}
-{% if source.homepageUrl -%}{{ source.homepageUrl }}{{ '  \n' }}{%- endif -%}
+{% if source.sponsor is defined -%}{{ source.sponsor }}{{ '  \n' }}{%- endif -%}
+{% if source.identifier is defined -%}{{ source.identifier }}{{ '  \n' }}{%- endif -%}
+{% if source.homepageUrl is defined -%}{{ source.homepageUrl }}{{ '  \n' }}{%- endif -%}
 {% endfor -%}
 {% endif -%}
 
-{%- if identifier -%}
+{%- if identifier is defined %}
 ## Identifier
 {{ identifier }}
 {% endif -%}
 
-{%- if query %}
+{%- if query is defined %}
 Query:
 {{ query }}
 {% endif -%}
-{%- if queryParameters %}
+
+{%- if queryParameters is defined %}
 Query parameters:
 {%- for parameter in queryParameters %}
-{% if parameter.name -%}Name: {{ parameter.name }}{{ '  \n' }}{%- endif -%}
-{% if parameter.description -%}Description: {{ parameter.description }}{{ '  \n' }}{%- endif -%}
-{% if parameter.type -%}Type: {{ parameter.type }}{{ '  \n' }}{%- endif -%}
-{% if parameter.arrayType -%}Array type: {{ parameter.arrayType }}{{ '  \n' }}{%- endif -%}
-{% if parameter.defaultValue -%} Default value: {{ parameter.defaultValue }}{{ '  \n' }}{%- endif -%}
+{% if parameter.name is defined -%}Name: {{ parameter.name }}{{ '  \n' }}{%- endif -%}
+{% if parameter.description is defined -%}Description: {{ parameter.description }}{{ '  \n' }}{%- endif -%}
+{% if parameter.type is defined -%}Type: {{ parameter.type }}{{ '  \n' }}{%- endif -%}
+{% if parameter.arrayType is defined -%}Array type: {{ parameter.arrayType }}{{ '  \n' }}{%- endif -%}
+{% if parameter.defaultValue is defined -%} Default value: {{ parameter.defaultValue }}{{ '  \n' }}{%- endif -%}
 
 {% endfor -%}
 {% endif -%}
 
-{%- if queryResultColumns %}
+{%- if queryResultColumns is defined %}
 Result columns:
 {%- for resultColumn in queryResultColumns %}
 {% if resultColumn.name -%}Name: {{ resultColumn.name }}{{ '  \n' }}{%- endif -%}
